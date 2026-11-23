@@ -1,0 +1,13 @@
+{
+  "name": "pixel-conquest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "도트 정복전 — 도트 지구에서 땅을 넓히며 살아남는 웹게임",
+  "scripts": {
+    "test": "node tools/test.js && node tools/nettest.js && node tools/sim.js 30 900 normal 1",
+    "sim": "node tools/sim.js",
+    "map": "node tools/build-map.js",
+    "start": "py -m http.server 8765 --bind 127.0.0.1",
+    "deploy:server": "cd server && npx wrangler@4 deploy"
+  }
+}

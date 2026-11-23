@@ -1,0 +1,5 @@
+# 지도 원본 데이터(1.6MB) — tools/build-map.js 가 쓰는 Natural Earth 파일. 다시 받으려면 README 참고
+tools/raw/
+node_modules/
+server/.wrangler/
+.playwright-mcp/

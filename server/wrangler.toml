@@ -1,0 +1,13 @@
+name = "dot-conquest-rooms"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# 방 하나 = Durable Object 하나. 방장 브라우저가 게임을 돌리고, 여기는 메시지만 전달한다
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+# 무료 요금제는 SQLite 기반 Durable Object 만 쓸 수 있다 (저장은 안 함)
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
