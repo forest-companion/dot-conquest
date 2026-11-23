@@ -306,7 +306,7 @@
     sendAid(from, to, kind, amount) {
       const a = this.players[from], b = this.players[to];
       if (this.phase !== 'play' || !a.alive || !b || !b.alive) return '지금은 지원할 수 없어요';
-      if (!this.allied(from, to)) return '동맹에게만 지원할 수 있어요';
+      if (!this.allied(from, to) && !this.isVassalPair(from, to)) return '동맹이나 복종 관계인 나라에만 지원할 수 있어요';
       amount = Math.floor(Math.min(amount, kind === 'gold' ? a.gold : a.troops));
       if (amount < 1) return kind === 'gold' ? '보낼 금이 없어요' : '보낼 여유 병력이 없어요';
       if (kind === 'gold') { a.gold -= amount; b.gold += amount; }

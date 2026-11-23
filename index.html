@@ -54,6 +54,16 @@
 
   #banner { top: 14px; left: 50%; transform: translateX(-50%); padding: 10px 18px; font-size: 16px; font-weight: 700; text-align: center; }
   #banner small { display: block; font-weight: 400; font-size: 12px; color: var(--dim); margin-top: 2px; }
+  #allyPanel { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+  #allyPanel .ah { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  #allyPanel .ah .t { font-weight: 400; color: var(--dim); font-size: 10px; }
+  #allyPanel .ar { display: flex; align-items: center; gap: 5px; font-size: 12px; margin: 3px 0; }
+  #allyPanel .c { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex: none; }
+  #allyPanel .an { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  #allyPanel .an:hover { text-decoration: underline; }
+  #allyPanel .rel { font-size: 10px; color: #b8ffcf; white-space: nowrap; }
+  #allyPanel .at { font-size: 11px; color: var(--dim); min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+  #allyPanel button { padding: 2px 6px; font-size: 13px; }
   #hud .ally { max-width: 230px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #b8ffcf; font-weight: 600; }
   #reqs { position: fixed; top: 74px; left: 0; right: 0; margin: 0 auto; width: fit-content; display: flex; flex-direction: column; gap: 6px; z-index: 7; }
   #reqs .req { position: static; padding: 9px 12px; font-size: 13px; display: flex; gap: 14px; align-items: center; border-color: #b8ffcf66; animation: pop .25s ease-out; }
@@ -127,6 +137,7 @@
   <div class="row"><span>생존 시간</span><b id="hTime"></b></div>
   <div class="row"><span>동맹</span><b id="hAlly" class="ally"></b></div>
   <div class="row"><span>복종</span><b id="hVassal" class="ally"></b></div>
+  <div id="allyPanel" class="hidden"></div>
 </div>
 
 <div id="board" class="panel hidden"><h3>순위 (영토)</h3><div id="boardList"></div></div>
@@ -218,6 +229,7 @@
 <script src="src/mapdata.js"></script>
 <script src="src/game.js"></script>
 <script src="src/net.js"></script>
+<script src="src/sprites.js"></script>
 <script src="src/main.js"></script>
 </body>
 </html>

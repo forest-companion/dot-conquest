@@ -309,6 +309,11 @@ function grab(send, def) {
   g.answerRequest(g.requests.find(r => r.to === a), true);
   ok(g.overlordOf(b) === a, '[복종] 제안 받아들이면 속국');
   ok(g.requestSubmit(a, b) !== null, '[복종] 속국을 거느린 나라는 복종할 수 없음');
+  // 복종 관계끼리 돈·병력 주고받기 (양쪽 다)
+  pa.troops = 50000; pb.troops = 10000; pa.gold = 9000; pb.gold = 3000;
+  ok(g.sendAid(a, b, 'troops', 20000) === null && pa.troops === 30000 && pb.troops === 30000, '[복종 지원] 종주국 → 속국 병력');
+  ok(g.sendAid(b, a, 'gold', 2000) === null && pb.gold === 1000 && pa.gold === 11000, '[복종 지원] 속국 → 종주국 금');
+  ok(g.sendAid(a, b, 'gold', 5000) === null && pb.gold === 6000, '[복종 지원] 종주국 → 속국 금');
 }
 // 컴퓨터의 대답
 {

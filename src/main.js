@@ -203,6 +203,7 @@
     logSeen = Math.max(0, game.events.length - 5); allyVer = game.allianceVer; lastPhase = game.phase;
     $('log').innerHTML = '';
     $('reqs').innerHTML = ''; reqEls.clear();
+    allyKey = '-'; $('allyPanel').classList.add('hidden');
     for (const id of ['hud', 'board', 'bar', 'log']) $(id).classList.remove('hidden');
     $('start').classList.add('hidden'); $('lobby').classList.add('hidden'); $('over').classList.add('hidden');
     const p = game.players[me];
@@ -611,16 +612,24 @@
       const c = game.players[st.owner].color, n = st.half * 2 + 1;
       const x0 = cam.x + (st.x - st.half) * S, y0 = cam.y + (st.y - st.half) * S, side = n * S;
       if (x0 > cw + 20 || y0 > ch + 20 || x0 + side < -20 || y0 + side < -20) continue;
-      const big = side >= 12;
-      if (big) {
-        ctx.fillStyle = `rgba(${c[0] * 0.5 | 0},${c[1] * 0.5 | 0},${c[2] * 0.5 | 0},0.85)`;
+      const big = side >= 10;
+      const spr = big && window.SPRITES ? SPRITES.get(st.type, c) : null;
+      if (spr) {
+        // 그림자 → 바닥판(주인 색) → 도트 그림
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.fillRect(x0 + side * 0.06, y0 + side * 0.08, side, side);
+        ctx.fillStyle = `rgba(${c[0] * 0.35 | 0},${c[1] * 0.35 | 0},${c[2] * 0.35 | 0},0.55)`;
         ctx.fillRect(x0, y0, side, side);
-        ctx.strokeStyle = st.owner === me ? '#ffffff' : `rgb(${Math.min(255, c[0] + 60)},${Math.min(255, c[1] + 60)},${Math.min(255, c[2] + 60)})`;
-        ctx.lineWidth = st.type === 'capital' ? 2.5 : 1.5;
-        ctx.strokeRect(x0 + 0.5, y0 + 0.5, side - 1, side - 1);
-        ctx.font = `${Math.round(Math.min(side * 0.7, 28))}px 'Segoe UI Emoji', sans-serif`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(BUILD[st.type].icon, x0 + side / 2, y0 + side / 2 + 1);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(spr, x0, y0, side, side);
+        if (st.owner === me && side >= 18) { // 내 건물은 모서리 표시
+          ctx.strokeStyle = '#ffffffcc'; ctx.lineWidth = 1.5;
+          const k = side * 0.22;
+          ctx.beginPath();
+          ctx.moveTo(x0, y0 + k); ctx.lineTo(x0, y0); ctx.lineTo(x0 + k, y0);
+          ctx.moveTo(x0 + side - k, y0 + side); ctx.lineTo(x0 + side, y0 + side); ctx.lineTo(x0 + side, y0 + side - k);
+          ctx.stroke();
+        }
       } else if (S >= 1.2) {
         // 멀리서는 작은 점
         const z = Math.max(3, side);
@@ -920,6 +929,7 @@
     const tradeMin = (p.tradeLog || []).filter(e => game.tick - e[0] < 600).reduce((a, e) => a + e[1], 0);
     $('hFleet').textContent = (nW || nT || tradeMin) ? `⛴${nW} 🚢${nT} · 무역 +${fmt(tradeMin)}/분` : '없음';
     updateRequests();
+    updateAllyPanel();
     for (const [type] of BTN) {
       const el = $('b_' + type);
       const c = game.cost(p, type);
@@ -980,6 +990,37 @@
     if (game.overlordOf(id) === me) return '⛓ ';
     if (game.overlordOf(me) === id) return '👑 ';
     return game.allied(me, id) ? '🤝 ' : '';
+  }
+  // 외교 패널: 동맹·속국·종주국 목록과 병력·금 지원 버튼 (보낼 양 = 아래 막대 비율)
+  let allyKey = '';
+  function updateAllyPanel() {
+    const box = $('allyPanel');
+    const p = game.players[me];
+    const list = game.players.filter(q => q.alive && q.id !== me && (game.allied(me, q.id) || game.isVassalPair(me, q.id)));
+    const key = list.map(q => q.id + ':' + game.overlordOf(q.id) + ':' + game.overlordOf(me)).join(',');
+    if (key !== allyKey) {
+      allyKey = key;
+      box.classList.toggle('hidden', !list.length || !p.alive);
+      box.innerHTML = '<div class="ah">🤝 외교 · 지원 <span class="t">(보낼 양 = 아래 비율)</span></div>' + list.map(q => {
+        const rel = game.overlordOf(q.id) === me ? '⛓속국' : game.overlordOf(me) === q.id ? '👑종주국' : '🤝동맹';
+        return `<div class="ar" data-id="${q.id}"><i class="c" style="background:rgb(${q.color})"></i><span class="an" title="눌러서 그 나라로 이동">${esc(q.name)}</span><span class="rel">${rel}</span>`
+          + `<span class="at"></span><button class="aT">💪</button><button class="aG">💰</button></div>`;
+      }).join('');
+      for (const row of box.querySelectorAll('.ar')) {
+        const id = +row.dataset.id;
+        row.querySelector('.aT').onclick = () => { const amt = game.players[me].troops * ratio; act('sendAid', id, 'troops', amt).then(e => toast(e || `💪 ${game.players[id].name}에 병력 ${fmt(amt)} 보냈어요`)); };
+        row.querySelector('.aG').onclick = () => { const amt = game.players[me].gold * ratio; act('sendAid', id, 'gold', amt).then(e => toast(e || `💰 ${game.players[id].name}에 금 ${fmt(amt)} 보냈어요`)); };
+        row.querySelector('.an').onclick = () => { const q = game.players[id]; if (q.label) centerOn(q.label.x, q.label.y, Math.max(cam.s, 3)); };
+      }
+    }
+    // 숫자만 바꾸기 (버튼을 새로 만들지 않아야 누르기가 안 끊김)
+    for (const row of box.querySelectorAll('.ar')) {
+      const q = game.players[+row.dataset.id];
+      if (!q) continue;
+      row.querySelector('.at').textContent = `${fmt(q.troops)}명`;
+      row.querySelector('.aT').title = `병력 ${fmt(p.troops * ratio)}명 보내기`;
+      row.querySelector('.aG').title = `금 ${fmt(p.gold * ratio)} 보내기`;
+    }
   }
   // 나에게 온 동맹 요청 창
   const reqEls = new Map();
